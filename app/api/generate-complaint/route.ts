@@ -4,7 +4,7 @@ import { buildComplaintSystemPrompt } from "@/lib/prompts";
 import type { CaseFacts, EvidenceClaim, CaseAnalysis, ComplaintDraft } from "@/lib/types";
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-const MODEL = process.env.GROQ_MODEL ?? "llama-3.1-70b-versatile";
+const MODEL = process.env.GROQ_MODEL ?? "openai/gpt-oss-20b";
 
 export async function POST(req: NextRequest) {
   try {
