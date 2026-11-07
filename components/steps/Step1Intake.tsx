@@ -76,10 +76,17 @@ export default function Step1Intake({ session, onUpdate, onNext }: Step1IntakePr
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef  = useRef<HTMLTextAreaElement>(null);
 
-  // Auto-send welcome message on first load
+  // Show welcome message immediately on first load — no API call needed
   useEffect(() => {
     if (session.messages.length === 0) {
-      sendWelcome();
+      const welcome: Message = {
+        id: generateId(),
+        role: "assistant",
+        content:
+          "Hello! I'm **RASEED**, your consumer dispute assistant 👋\n\nI'm here to help you prepare a complaint about an **online shopping or refund problem** — no legal knowledge needed.\n\nCould you start by telling me what happened? Describe the problem in your own words.",
+        timestamp: new Date(),
+      };
+      onUpdate({ messages: [welcome] });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -87,48 +94,6 @@ export default function Step1Intake({ session, onUpdate, onNext }: Step1IntakePr
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [session.messages, isLoading]);
-
-  async function sendWelcome() {
-    setIsLoading(true);
-    try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          mode: "intake",
-          messages: [
-            {
-              id: generateId(),
-              role: "user",
-              content: "__init__",
-              timestamp: new Date(),
-            },
-          ],
-        }),
-      });
-      const data = (await res.json()) as { content?: string; error?: string };
-      if (data.content) {
-        const welcome: Message = {
-          id: generateId(),
-          role: "assistant",
-          content: data.content,
-          timestamp: new Date(),
-        };
-        onUpdate({ messages: [welcome] });
-      }
-    } catch {
-      const fallback: Message = {
-        id: generateId(),
-        role: "assistant",
-        content:
-          "Hello! I'm RASEED, your consumer dispute assistant. I'm here to help you prepare a complaint about an online shopping or refund issue.\n\nCould you start by telling me what happened? Describe the problem in your own words — no legal knowledge needed.",
-        timestamp: new Date(),
-      };
-      onUpdate({ messages: [fallback] });
-    } finally {
-      setIsLoading(false);
-    }
-  }
 
   const handleSend = useCallback(async () => {
     const text = input.trim();
@@ -158,7 +123,15 @@ export default function Step1Intake({ session, onUpdate, onNext }: Step1IntakePr
           })),
         }),
       });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({})) as { error?: string };
+        throw new Error(errData.error ?? `Server error ${res.status}`);
+      }
+
       const data = (await res.json()) as { content?: string; error?: string };
+      if (data.error) throw new Error(data.error);
+
       const reply = data.content ?? "I'm sorry, I had trouble processing that. Could you try again?";
 
       const assistantMsg: Message = {
@@ -179,11 +152,11 @@ export default function Step1Intake({ session, onUpdate, onNext }: Step1IntakePr
       if (detectReadyToAdvance(reply)) {
         setReadyToAdvance(true);
       }
-    } catch {
+    } catch (err) {
       const errMsg: Message = {
         id: generateId(),
         role: "assistant",
-        content: "I encountered an error. Please check your connection and try again.",
+        content: `Sorry, I ran into an error: ${err instanceof Error ? err.message : "unknown error"}. Please check that your GROQ_API_KEY is set in .env.local and restart the server.`,
         timestamp: new Date(),
       };
       onUpdate({ messages: [...updatedMessages, errMsg] });

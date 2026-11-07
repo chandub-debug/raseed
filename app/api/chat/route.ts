@@ -43,7 +43,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ content });
   } catch (err: unknown) {
     console.error("[/api/chat] Error:", err);
-    const message = err instanceof Error ? err.message : "Internal server error";
+    // Surface the actual Groq error message so the client can display it
+    let message = "Internal server error";
+    if (err instanceof Error) {
+      message = err.message;
+    }
+    // Check for Groq-specific error shape
+    const groqErr = err as { error?: { message?: string }; status?: number };
+    if (groqErr?.error?.message) {
+      message = groqErr.error.message;
+    }
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

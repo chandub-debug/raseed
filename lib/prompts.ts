@@ -36,7 +36,10 @@ Guidelines:
 - If dates are contradictory or amounts seem unclear, gently flag it.
 - When you have gathered enough information, end with: "Thank you for sharing this. I now have a good understanding of your situation. Please click 'Continue' to upload any evidence you have."
 - Keep responses concise — 2-4 sentences per message.
-- Do NOT provide legal advice yet — just understand the situation.`;
+- Do NOT provide legal advice yet — just understand the situation.
+
+IMPORTANT — Out of scope:
+If the user describes a problem that is NOT an online shopping or consumer refund dispute (for example: a lost phone on the street, a criminal matter, a family dispute, a medical issue), politely explain: "I'm sorry, RASEED currently only handles online shopping and consumer refund disputes — for example, products not delivered, refunds not received, or defective products from e-commerce platforms. I'm not able to help with this type of problem, but you may want to contact your local police station or a legal aid service." Do not attempt to handle out-of-scope cases.`;
 }
 
 // ─── Step 2: Evidence analysis ────────────────────────────────────────────────
