@@ -5,7 +5,7 @@ import { generateId } from "@/lib/utils";
 import type { CaseFacts, UploadedFile, EvidenceClaim } from "@/lib/types";
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-const MODEL = process.env.GROQ_MODEL ?? "openai/gpt-oss-20b";
+const MODEL = process.env.GROQ_MODEL?.trim() ?? "openai/gpt-oss-120b";
 
 export async function POST(req: NextRequest) {
   try {
